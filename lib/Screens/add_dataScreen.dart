@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:student_app/model/user.dart';
-import 'package:student_app/myHome_page.dart';
-import 'package:student_app/services/user_services.dart';
+import 'package:student_app/controllers/student_controller.dart';
+import 'package:student_app/model/student.dart';
+import 'package:student_app/Screens/home_screen.dart';
+
 
 class AddDataScreen extends StatefulWidget {
   const AddDataScreen({Key? key});
@@ -13,18 +15,16 @@ class AddDataScreen extends StatefulWidget {
 }
 
 class AddDataScreenState extends State<AddDataScreen> {
-  var _userNameController = TextEditingController();
-  var _userAgeController = TextEditingController();
-  var _userClassController = TextEditingController();
-  var _userGenderController = TextEditingController();
-  bool _validateName = false;
-  bool _validateAge = false;
-  bool _validateClass = false;
-  bool _validateGender = false;
+  final StudentController studentController = Get.put(StudentController());
+  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController userClassController = TextEditingController();
+  final TextEditingController userAgeController = TextEditingController();
+  final TextEditingController userGenderController = TextEditingController();
+  final ImagePicker picker = ImagePicker();
 
-  final _userService = UserService();
+
+
   File? _image;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class AddDataScreenState extends State<AddDataScreen> {
           padding: const EdgeInsets.all(18.9),
           child: Column(
             children: [
-              Row(
+              const Row(
                 children: [
                   Text(
                     "Add New Student",
@@ -61,24 +61,23 @@ class AddDataScreenState extends State<AddDataScreen> {
                 radius: 50,
                 backgroundImage: _image != null
                     ? FileImage(_image!) as ImageProvider
-                    : const AssetImage('assets/student11.jpg'),
+                    : const AssetImage('assets/585e4bf3cb11b227491c339a.png'),
               ),
               ElevatedButton(
+                style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.blue[200])),
                 onPressed: _getImage,
-                child: const Text('Pick Image'),
+                child: const Text(
+                  'Pick Image',
+                  style: TextStyle(color: Colors.black, fontSize: 12),
+                ),
               ),
               const SizedBox(
                 height: 20,
               ),
               TextFormField(
-                controller: _userNameController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateName = value.isEmpty;
-                  });
-                },
+                controller: userNameController,
                 decoration: InputDecoration(
-                  errorText: _validateName ? "Name cant't be Empty" : null,
                   hintText: " Enter Full Name",
                   labelText: "Name",
                   border: OutlineInputBorder(
@@ -91,14 +90,9 @@ class AddDataScreenState extends State<AddDataScreen> {
               ),
               TextFormField(
                 keyboardType: TextInputType.number,
-                controller: _userAgeController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateAge = value.isEmpty;
-                  });
-                },
+                controller: userAgeController,
+                
                 decoration: InputDecoration(
-                  errorText: _validateAge ? "Age cant't be Empty" : null,
                   hintText: " Enter Age",
                   labelText: " Age",
                   border: OutlineInputBorder(
@@ -110,14 +104,9 @@ class AddDataScreenState extends State<AddDataScreen> {
                 height: 15,
               ),
               TextFormField(
-                controller: _userClassController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateClass = value.isEmpty;
-                  });
-                },
+                controller: userClassController,
+                
                 decoration: InputDecoration(
-                  errorText: _validateClass ? "Class cant't be Empty" : null,
                   hintText: " Enter Class",
                   labelText: " Class",
                   border: OutlineInputBorder(
@@ -129,14 +118,9 @@ class AddDataScreenState extends State<AddDataScreen> {
                 height: 15,
               ),
               TextFormField(
-                controller: _userGenderController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateGender = value.isEmpty;
-                  });
-                },
+                controller: userGenderController,
+                
                 decoration: InputDecoration(
-                  errorText: _validateGender ? "Gender cant't be Empty" : null,
                   hintText: "Enter Gender ",
                   labelText: " Gender",
                   border: OutlineInputBorder(
@@ -144,10 +128,10 @@ class AddDataScreenState extends State<AddDataScreen> {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 35,
               ),
-              Row(
+              const Row(
                 children: [
                   SizedBox(
                     width: 20,
@@ -167,10 +151,13 @@ class AddDataScreenState extends State<AddDataScreen> {
                       backgroundColor: Colors.red[100],
                     ),
                     onPressed: () {
-                      _userNameController.text = "";
-                      _userAgeController.text = "";
-                      _userClassController.text = "";
-                      _userGenderController.text = "";
+                      userNameController.clear();
+                      userAgeController.clear();
+                      userClassController.clear();
+                      userGenderController.clear();
+                      setState(() {
+                        _image = null;
+                      });
                     },
                     child: Text(
                       "Clear Data",
@@ -185,46 +172,30 @@ class AddDataScreenState extends State<AddDataScreen> {
                       backgroundColor: Colors.green[100],
                     ),
                     onPressed: () async {
-                      print(" Good Data Can Save Now");
+                      final userName = userNameController.text;
+                      final userAge = userAgeController.text;
+                      final userClass = userClassController.text;
+                      final userGender = userGenderController.text;
 
-                      setState(
-                        () {
-                          _userNameController.text.isEmpty
-                              ? _validateName = true
-                              : _validateName = false;
+                      if (userName.isEmpty ||
+                          userAge.isEmpty ||
+                          userClass.isEmpty ||
+                          userGender.isEmpty) {
+                        _showSnackBar(
+                             'Please fill all details', Colors.red);
+                            return;
+                          }
+                        final student = Student(
+                            name: userName,
+                            age: userAge,
+                            gender: userGender,
+                            studentClass: userClass,
+                            imagePath: _image?.path);
 
-                          _userAgeController.text.isEmpty
-                              ? _validateAge = true
-                              : _validateAge = false;
-
-                          _userClassController.text.isEmpty
-                              ? _validateClass = true
-                              : _validateClass = false;
-
-                          _userGenderController.text.isEmpty
-                              ? _validateGender = true
-                              : _validateGender = false;
-                        },
-                      );
-                      if (_validateName == false &&
-                          _validateAge == false &&
-                          _validateClass == false &&
-                          _validateGender == false) {
-                        _showSnackBar(context, 'Data Saved Successfully',);
-
-                        var _user = User();
-                        _user.name = _userNameController.text;
-                        _user.studentclass = _userClassController.text;
-                        _user.age = _userAgeController.text;
-                        _user.gender = _userGenderController.text;
-                        _user.image = _image?.path;
-                        var result = await _userService.SaveUser(_user);
-                        print(result);
-                        Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (ctx) {
-                          return MyHome();
-                        }), (route) => false);
-                      }
+                        studentController.addStudent(student);
+                        
+                       Get.offAll(()=>  HomeScreen());
+                      
                     },
                     child: Text(
                       "Save Data",
@@ -240,19 +211,14 @@ class AddDataScreenState extends State<AddDataScreen> {
     );
   }
 
-  void _showSnackBar(BuildContext context, String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: color,
-        content: Text(message),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  void _showSnackBar( String message, Color color) {
+    Get.snackbar('Notification', message,backgroundColor: color,duration:const Duration(seconds: 2));
+
   }
 
   Future<void> _getImage() async {
     final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+        await picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
       _image = pickedFile != null ? File(pickedFile.path) : null;

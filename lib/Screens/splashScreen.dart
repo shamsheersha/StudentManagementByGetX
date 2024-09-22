@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:student_app/myHome_page.dart';
+import 'package:student_app/Screens/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,11 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SingleChildScrollView(
-        child: Center(
-          child: Image.asset(
-            "assets/AddStudent.jpg",
-          ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Loading...',style: TextStyle(color: Colors.white,fontSize: 20,fontStyle: FontStyle.italic ),)
+          ],
         ),
       ),
     );
@@ -33,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(Duration(seconds: 3));
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (ctx) => const MyHome(),
+        builder: (ctx) =>  HomeScreen(),
       ),
     );
   }

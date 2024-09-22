@@ -1,41 +1,43 @@
 import 'dart:io';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:student_app/model/user.dart';
-import 'package:student_app/myHome_page.dart';
-import 'package:student_app/services/user_services.dart';
+import 'package:student_app/controllers/student_controller.dart';
+import 'package:student_app/model/student.dart';
+import 'package:student_app/Screens/home_screen.dart';
 
-class EditUser extends StatefulWidget {
-  final User user;
-
-  const EditUser({Key? key, required this.user}) : super(key: key);
+class EditStudent extends StatefulWidget {
+  final studentKey;
+  final Student student;
+  const EditStudent({Key? key, required this.student, required this.studentKey})
+      : super(key: key);
 
   @override
-  State<EditUser> createState() => _EditUserState();
+  State<EditStudent> createState() => _EditStudentState();
 }
 
-class _EditUserState extends State<EditUser> {
+class _EditStudentState extends State<EditStudent> {
+  final StudentController studentController = Get.put(StudentController());
   File? _image;
   final ImagePicker _picker = ImagePicker();
-  var _userNameController = TextEditingController();
-  var _userAgeController = TextEditingController();
-  var _userClassController = TextEditingController();
-  var _userGenderController = TextEditingController();
+  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController userAgeController = TextEditingController();
+  final TextEditingController userClassController = TextEditingController();
+  final TextEditingController userGenderController = TextEditingController();
   bool _validateName = false;
   bool _validateAge = false;
   bool _validateClass = false;
   bool _validateGender = false;
-  var _userService = UserService();
   @override
   void initState() {
     setState(() {
-      _userNameController.text = widget.user.name ?? '';
-      _userClassController.text = widget.user.age ?? '';
-      _userAgeController.text = widget.user.age ?? '';
-      _userGenderController.text = widget.user.gender ?? '';
+      userNameController.text = widget.student.name ?? '';
+      userClassController.text = widget.student.age ?? '';
+      userAgeController.text = widget.student.age ?? '';
+      userGenderController.text = widget.student.gender ?? '';
 
-      if (widget.user.image != null) {
-        _image = File(widget.user.image!);
+      if (widget.student.imagePath != null) {
+        _image = File(widget.student.imagePath!);
       } else {
         _image = null;
       }
@@ -43,6 +45,7 @@ class _EditUserState extends State<EditUser> {
     super.initState();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +62,7 @@ class _EditUserState extends State<EditUser> {
           padding: const EdgeInsets.all(18.9),
           child: Column(
             children: [
-              Row(
+              const Row(
                 children: [
                   Text(
                     "Add New Student",
@@ -86,17 +89,11 @@ class _EditUserState extends State<EditUser> {
                 height: 35,
               ),
               TextFormField(
-                controller: _userNameController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateName = value.isEmpty;
-                  });
-                },
+                controller: userNameController,
                 decoration: InputDecoration(
-                  errorText: _validateName ? "Name cant't be Empty" : null,
                   hintText: " Enter Full Name",
                   labelText: "Name",
-                  border: OutlineInputBorder( 
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
@@ -106,14 +103,8 @@ class _EditUserState extends State<EditUser> {
               ),
               TextFormField(
                 keyboardType: TextInputType.number,
-                controller: _userAgeController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateAge = value.isEmpty;
-                  });
-                },
+                controller: userAgeController,
                 decoration: InputDecoration(
-                  errorText: _validateAge ? "Age cant't be Empty" : null,
                   hintText: " Enter Age",
                   labelText: " Age",
                   border: OutlineInputBorder(
@@ -125,14 +116,8 @@ class _EditUserState extends State<EditUser> {
                 height: 15,
               ),
               TextFormField(
-                controller: _userClassController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateClass = value.isEmpty;
-                  });
-                },
+                controller: userClassController,
                 decoration: InputDecoration(
-                  errorText: _validateClass ? "Class cant't be Empty" : null,
                   hintText: " Enter Class",
                   labelText: " Class",
                   border: OutlineInputBorder(
@@ -144,14 +129,8 @@ class _EditUserState extends State<EditUser> {
                 height: 15,
               ),
               TextFormField(
-                controller: _userGenderController,
-                onChanged: (value) {
-                  setState(() {
-                    _validateGender = value.isEmpty;
-                  });
-                },
+                controller: userGenderController,
                 decoration: InputDecoration(
-                  errorText: _validateGender ? "Gender cant't be Empty" : null,
                   hintText: "Enter Gender ",
                   labelText: " Gender",
                   border: OutlineInputBorder(
@@ -167,15 +146,18 @@ class _EditUserState extends State<EditUser> {
                   const SizedBox(
                     width: 70,
                   ),
-                  TextButton( 
+                  TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.red[100],
                     ),
                     onPressed: () {
-                      _userNameController.text = "";
-                      _userAgeController.text = "";
-                      _userClassController.text = "";
-                      _userGenderController.text = "";
+                      userNameController.text = "";
+                      userAgeController.text = "";
+                      userClassController.text = "";
+                      userGenderController.text = "";
+                      setState(() {
+                        _image = null;
+                      });
                     },
                     child: Text(
                       "Clear Data",
@@ -190,49 +172,29 @@ class _EditUserState extends State<EditUser> {
                       backgroundColor: const Color.fromARGB(255, 203, 200, 230),
                     ),
                     onPressed: () async {
-                      setState(
-                        () {
-                          _userNameController.text.isEmpty
-                              ? _validateName = true
-                              : _validateName = false;
+                      final userName = userNameController.text;
+                      final userAge = userAgeController.text;
+                      final userClass = userClassController.text;
+                      final userGender = userGenderController.text;
 
-                          _userAgeController.text.isEmpty
-                              ? _validateAge = true
-                              : _validateAge = false;
-
-                          _userClassController.text.isEmpty
-                              ? _validateClass = true
-                              : _validateClass = false;
-
-                          _userGenderController.text.isEmpty
-                              ? _validateGender = true
-                              : _validateGender = false;
-                          _showSnackBar(context, 'Data Updated Successfully');
-                        },
-                      );
-                      if (_validateName == false &&
-                          _validateClass == false &&
-                          _validateClass == false &&
-                          _validateGender == false) {
-                        //  print(" Good Data Can Save Now");
-
-                        var user = User();
-                        // print(widget.user.id);
-                        user.id = widget.user.id;
-                        user.name = _userNameController.text;
-                        user.studentclass = _userClassController.text;
-                        user.age = _userAgeController.text;
-                        user.gender = _userGenderController.text;
-                        user.image = _image?.path;
-                        var result = await _userService.UpdateUser(user);
-                        print(result);
-                        // ignore: use_build_context_synchronously
-                        Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (ctx) => MyHome()),
-                            (route) => false);
+                      if (userName.isEmpty ||
+                          userAge.isEmpty ||
+                          userClass.isEmpty ||
+                          userGender.isEmpty) {
+                        _showSnackBar(context, 'Please fill add details',Colors.red);
+                        return;
                       }
+                      final user = Student(
+                          name: userName,
+                          age: userAge,
+                          gender: userGender,
+                          studentClass: userClass,
+                          imagePath: _image?.path);
+                      studentController.updateStudents(widget.studentKey, user);
+                      _showSnackBar(context, 'Data Saved',Colors.black);
+                      Get.offAll(()=>  HomeScreen());
                     },
-                    child: Text(
+                    child: const Text(
                       "Updata Data",
                       style: TextStyle(color: Color.fromARGB(255, 15, 44, 206)),
                     ),
@@ -246,12 +208,12 @@ class _EditUserState extends State<EditUser> {
     );
   }
 
-  void _showSnackBar(BuildContext context, String message) {
+  void _showSnackBar(BuildContext context, String message,Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.green,
         content: Text(message),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -260,8 +222,10 @@ class _EditUserState extends State<EditUser> {
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      _image = pickedFile != null ? File(pickedFile.path) : null;
-    });
+    if(pickedFile != null){
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
   }
 }

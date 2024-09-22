@@ -1,35 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:student_app/model/user.dart';
+import 'package:get/get.dart';
+import 'package:student_app/controllers/student_controller.dart';
+import 'package:student_app/model/student.dart';
 
-class StudetsDetails extends StatefulWidget {
-  final User user;
-  const StudetsDetails({super.key, required this.user});
 
-  @override
-  State<StudetsDetails> createState() => _StudetsDetailsState();
-}
 
-class _StudetsDetailsState extends State<StudetsDetails> {
-  File? _image;
-  @override
-  void initState() {
-    if (widget.user.image != null) {
-      _image = File(widget.user.image!);
-    } else {
-      _image = null;
-    }
-    super.initState();
-  }
+
+class StudentsDetails extends  GetView<StudentController>{
+  final Student student;
+  const StudentsDetails({Key? key, required this.student}) : super(key: key);
+ 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 225, 218, 218),
+        backgroundColor: const Color.fromARGB(255, 225, 218, 218),
       ),
       body: Container(
-        color: Color.fromARGB(255, 225, 218, 218),
+        color: const Color.fromARGB(255, 225, 218, 218),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -51,20 +41,18 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Color.fromARGB(255, 11, 11, 11)
+                      color: const Color.fromARGB(255, 11, 11, 11)
                           .withOpacity(0.5), // Shadow color
                       spreadRadius: 5, // Spread radius
                       blurRadius: 7, // Blur radius
-                      offset: Offset(6, 6), // Offset (adjust as needed)
+                      offset: const Offset(6, 6), // Offset (adjust as needed)
                     ),
                   ],
                 ),
                 child: CircleAvatar(
                   foregroundColor: const Color.fromARGB(255, 18, 16, 16),
                   backgroundColor: Colors.black12,
-                  backgroundImage: _image != null
-                      ? FileImage(_image!) as ImageProvider
-                      : const AssetImage('assets/student11.jpg'),
+                  backgroundImage: student.imagePath != null ? FileImage(File(student.imagePath!))as ImageProvider: const AssetImage('assets/585e4bf3cb11b227491c339a.png'),
                   radius: 110,
                 ),
               ),
@@ -72,17 +60,17 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                 height: 60,
               ),
               Card(
-                color: Color.fromARGB(255, 213, 214, 214),
+                color: const Color.fromARGB(255, 213, 214, 214),
                 child: Column(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 50,
                     ),
                     Text(
                       "User Full Details",
                       style: TextStyle(fontSize: 22, color: Colors.red[400]),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 50,
                     ),
                     Padding(
@@ -97,7 +85,7 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            widget.user.name ?? "",
+                            student.name,
                             style: const TextStyle(
                               fontSize: 16,
                             ),
@@ -120,7 +108,7 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            widget.user.age ?? '',
+                            student.age.toString(),
                             style: const TextStyle(
                               fontSize: 16,
                             ),
@@ -143,7 +131,7 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            widget.user.studentclass ?? '',
+                            student.studentClass,
                             style: const TextStyle(
                               fontSize: 16,
                             ),
@@ -163,7 +151,7 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            widget.user.gender ?? "",
+                            student.gender,
                             style: const TextStyle(
                               fontSize: 16,
                             ),
@@ -171,7 +159,7 @@ class _StudetsDetailsState extends State<StudetsDetails> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 50,
                     )
                   ],
